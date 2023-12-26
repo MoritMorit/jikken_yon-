@@ -57,7 +57,6 @@ nop
 
 //r4,r5==0 --> 1/2
 sr r3, r3
-addi r7, 1
 
 //call best(E)
 lui r0, #bf
@@ -72,6 +71,7 @@ sw r3, (r0)
 addi r0, -2
 sw r7, (r0)
 
+addi r7, 1
 lui r1, #a1
 lw r0, (r1)
 addi r0, -1
@@ -93,17 +93,18 @@ lui r4, #c0
 sub r7, r4
 //r7 y, r6 x
 mov r6, r7
+
 //y
 sl r7, r7
 sr8 r7, r7
-sw r7, (r5)
+sbu r7, (r5)
 //x
 addi r5, 1
 sl r6, r6
 sl r6, r6
 sr r6, r6
 sr r6, r6
-sw r6, (r5)
+sbu r6, (r5)
 
 nop
 nop
