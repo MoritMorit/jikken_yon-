@@ -280,11 +280,11 @@
 	   if(rst)
 		   ex_result_in =16'b0;
 	   else if(id_ir[15:11] == 5'b0)begin
-		   if(id_ir[4:0] == 5'b1011 && id_operand_reg2[0] == 1'b1)begin
+		   if(id_ir[4:0] == 5'b10011 && id_operand_reg2[0] == 1'b1)begin
 			   ex_result_in[7:0] = d_din[7:0];
 			   ex_result_in[15:8] = 8'b0;
 		   end
-		   else if(id_ir[4:0] == 5'b1011 && id_operand_reg2[0] == 1'b0)begin
+		   else if(id_ir[4:0] == 5'b10011 && id_operand_reg2[0] == 1'b0)begin
 			   ex_result_in[7:0] = d_din[15:8];
 			   ex_result_in[15:8] = 8'b0;
 		   end
