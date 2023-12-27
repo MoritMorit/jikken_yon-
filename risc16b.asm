@@ -109,7 +109,8 @@ sbu r6, (r5)
 nop
 nop
 nop
-
+j -2
+nop
 
 //y bf00
 SET @bf00 0 0
