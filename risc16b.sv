@@ -43,7 +43,8 @@
 
    logic [15:0] 	 if_pc_bta;
    logic 		 if_pc_we;
-   
+
+   //m
    always_ff @(posedge clk) begin
       if(rst)
 	if_pc <= 16'd0;
@@ -53,6 +54,7 @@
         if_pc <= if_pc + 16'd2;
    end
 
+   //m
    always_ff @(posedge clk) begin
       if (rst)
         if_ir <= 16'd0;
@@ -60,6 +62,7 @@
         if_ir <= i_din;
    end
 
+   //m
    assign i_oe = 1'b1;
    assign i_addr = if_pc;
    
@@ -71,11 +74,14 @@
    logic [15:0]  id_operand_in1, id_imm_in;
 
 
+   //m
    assign reg_file_rnum1 = if_ir[10:8];
+   //m
    assign reg_file_rnum2 = if_ir[7:5];
+   //m
    assign if_pc_bta = (id_imm_in + if_pc);
    
-   //
+   //m
    always_ff @(posedge clk) begin
       if (rst)
         id_pc <= 16'd0;
@@ -83,19 +89,19 @@
         id_pc <= if_pc;
    end   
 
-   //
+   //m
    always_comb begin
       if (rst)
         id_operand_in1 <= 16'd0;
-      else if(if_ir[10:8]== id_ir[10:8] && ex_reg_file_we_in == 1'b1)
+      else if(if_ir[10:8]== id_ir[10:8] & ex_reg_file_we_in == 1)
 	id_operand_in1 <= ex_result_in;
-      else if(if_ir[10:8]==ex_ir[10:8] && ex_reg_file_we_reg == 1'b1)
+      else if(if_ir[10:8]==ex_ir[10:8] & reg_file_we == 1)
 	id_operand_in1 <= ex_result_reg;
       else 
         id_operand_in1 <= reg_file_dout1;
    end
 
-   //
+   //m
    always_ff @(posedge clk) begin
       if(rst)
 	id_operand_reg1 <= 16'b0;
@@ -103,36 +109,23 @@
 	id_operand_reg1 <= id_operand_in1;
    end
    
-   //
+   //m
    always_comb begin
-      if(if_ir[15:11] == 5'b10000 && id_operand_in1 == 16'b0)
+      if(if_ir[15:11] == 5'b10000 & id_operand_in1 == 0)
 	if_pc_we = 1'b1;
-      else if(if_ir[15:11] == 5'b10001 && id_operand_in1 != 16'b0)
+      else if(if_ir[15:11] == 5'b10001 & id_operand_in1 != 0)
 	if_pc_we = 1'b1;
-      else if(if_ir[15:11] == 5'b10010 && id_operand_in1[15] == 1'b1)
+      else if(if_ir[15:11] == 5'b10010 & id_operand_in1[15] == 1)
 	if_pc_we = 1'b1;
-      else if(if_ir[15:11] == 5'b10011 && id_operand_in1[15] == 1'b0)
+      else if(if_ir[15:11] == 5'b10011 & id_operand_in1[15] == 0)
 	if_pc_we = 1'b1;
       else if(if_ir[15:11] == 5'b11000)
 	if_pc_we = 1'b1;
       else
 	if_pc_we = 1'b0;
    end // always_comb
-
-   //
-   always_comb begin
-      if(if_ir[15:11] == 5'b00100 || if_ir[15] == 1) begin
-	 if(if_ir[7]==1)
-	   id_imm_in[15:8] <= 8'b11111111;
-	 else
-	   id_imm_in[15:8] <= 8'b00000000;
-      end
-      else
-	id_imm_in[15:8] <= 8'b00000000;
-        id_imm_in[7:0] <= if_ir[7:0];
-   end // always_comb
    
-   //
+   //m
    always_ff @(posedge clk) begin
       if (rst)
         id_imm_reg <= 16'd0;
@@ -140,7 +133,7 @@
 	id_imm_reg <= id_imm_in;
    end
 
-   //
+   //m
    always_ff @(posedge clk) begin
       if (rst) 
         id_ir <= 16'd0;
@@ -148,17 +141,37 @@
         id_ir <= if_ir;
    end
 
-   //
+   //m
    always_ff @(posedge clk) begin
       if (rst)
         id_operand_reg2 <= 16'd0;
-      else if(if_ir[7:5]== id_ir[10:8] & ex_reg_file_we_in == 1'b1)
+      else if(if_ir[7:5]== id_ir[10:8] & ex_reg_file_we_in == 1)
 	id_operand_reg2 <= ex_result_in;
-      else if(if_ir[7:5]== ex_ir[10:8] & ex_reg_file_we_reg == 1'b1)
+      else if(if_ir[7:5]== ex_ir[10:8] & reg_file_we == 1)
 	id_operand_reg2 <= ex_result_reg;
       else 
         id_operand_reg2 <= reg_file_dout2;
    end
+
+   //m
+   always_comb begin
+      case(if_ir[15:11])
+	 5'b00100: id_imm_in = (if_ir[7]==1)?{8'hff,if_ir[7:0]}:{8'h00,if_ir[7:0]};
+	 5'b01010: id_imm_in = {8'h00,if_ir[7:0]};
+	 5'b01011: id_imm_in = {8'h00,if_ir[7:0]};
+	 5'b00001: id_imm_in = {8'h00,if_ir[7:0]};
+	 5'b00110: id_imm_in = {8'h00,if_ir[7:0]};
+	 5'b10000: id_imm_in =(if_ir[7]==1)?{8'hff,if_ir[7:0]}:{8'h00,if_ir[7:0]};
+	 5'b10001: id_imm_in =(if_ir[7]==1)?{8'hff,if_ir[7:0]}:{8'h00,if_ir[7:0]};
+	 5'b10010: id_imm_in =(if_ir[7]==1)?{8'hff,if_ir[7:0]}:{8'h00,if_ir[7:0]};
+	 5'b10011: id_imm_in =(if_ir[7]==1)?{8'hff,if_ir[7:0]}:{8'h00,if_ir[7:0]};
+	 5'b11000: id_imm_in =(if_ir[7]==1)?{8'hff,if_ir[7:0]}:{8'h00,if_ir[7:0]};
+	default : id_imm_in = 16'd0;
+      endcase // case (if_ir[15:11])
+   end // always_comb
+   
+
+   
    /*
     always_ff @(posedge clk) begin
     if (rst)
@@ -199,13 +212,14 @@
 
    logic [15:0]       ex_operand_reg1;
 
-   //
+   /*
    always_ff @(posedge clk) begin
       if(rst)
 	ex_operand_reg1 <= 16'd0;
       else
 	ex_operand_reg1 = id_operand_reg1;
    end
+    */
 
    // assign alu_ain = id_operand_reg1;
    // assign alu_bin = id_operand_reg2;
@@ -214,9 +228,12 @@
    //onew
 
 
-   //
-   assign ex_reg_file_we_in = (id_ir == 16'h0000 ||  id_ir[15] == 1'h1 || (id_ir[15:11]==5'd0 && id_ir[4:0]==5'b10000) || (id_ir[15:11]==5'd0 && id_ir[4:0]==5'b10010))? 1'b0 : 1'b1;
+   //m
+   assign ex_reg_file_we_in = (id_ir == 16'h0000 ||  id_ir[15] == 1'h1 || (id_ir[15:11]==5'b0 && id_ir[4:0]==5'b10000) || (id_ir[15:11]==5'd0 && id_ir[4:0]==5'b10010))? 1'b0 : 1'b1;
 
+
+
+//m 
    always_ff @(posedge clk) begin
       if (rst)
         ex_reg_file_we_reg <= 16'd0;
@@ -225,51 +242,50 @@
    end
    
 
-   //   
+   //m
    assign d_addr = id_operand_reg2;
 
-   //
+   //m
    always_comb begin
-      if(id_ir[15:11]==5'd0 && id_ir[4]==1'd1 && (id_ir[3:0]==4'b0011 || id_ir[3:0]==4'b0001))//lw, lbu
+      if(id_ir[15:11]==5'b0 && (id_ir[4:0] == 5'b10001 || id_ir[4:0] == 5'b10011))
 	d_oe = 1'd1;
       else
 	d_oe = 1'd0;
    end
    
 
-   //mendo
-   always_comb begin
-      if(id_ir[15:11]==5'd0 && id_ir[4]==1'd1 && id_ir[0]==1'd0) //store
-	if(id_ir[3:0]==4'b0010 && id_operand_reg2[0]==1'd0) begin //sbu even
-	   d_dout[15:8] = id_operand_reg1[7:0];
-	   d_dout[7:0] = 8'd0;
-	end
-	else 
-	  d_dout = id_operand_reg1;
-      
-      else 
-	d_dout = 16'd0;
-      
-   end // always_comb
-
-   always_comb begin
-      if(id_ir[15:11]==5'b0 && id_ir[4]==1'd1 && id_ir[0]==1'd0) begin//store
-	 if(id_ir[3:0]==4'b0010 && id_operand_reg2[0]==1'd0) begin//sbu even
-            d_we = 2'b01;
+   //m
+      always_comb begin
+	 if(id_ir[4:0] == 5'b10000 && id_ir[15:11] == 5'b0)
+	    d_dout = id_operand_reg1;
+	 else if(id_ir[4:0] == 5'b10010 && id_operand_reg2[0] == 1'b0)begin
+	    d_dout[7:0] = 0;
+	    d_dout[15:8] = id_operand_reg1[7:0];
 	 end
-         else begin
-	    if(id_ir[3:0] == 4'b0000)//sw
-	      d_we = 2'b11;
-	    else//sbu odd
-	      d_we = 2'b10;
-	 end 
-      end 
-      else begin
-	 d_we = 2'b00;
-      end 
-   end 
+	 else if(id_ir[4:0] == 5'b10010 && id_operand_reg2[0] == 1'b1)begin
+	    d_dout[7:0] = id_operand_reg2[7:0];
+	    d_dout[15:8] = 0;
+	 end
+	 else
+	   d_dout +16'b0;
+      end // always_comb
    
 
+   //m
+   always_comb begin
+	   if(id_ir[15:11]==5'b0 && id_ir[4:0] == 5'b10000)
+		   d_we = 2'b11;
+	   else if(id_ir[15:11]==5'b0 && id_ir[4:0] == 5'b10010)begin
+		   if(id_operand_reg2[0] == 1'b0)
+			   d_we = 2'b01;
+		   else
+			   d_we = 2'b10;
+	   end
+	   else
+		   d_we = 2'b00;
+   end
+		   
+//m
    always_ff @(posedge clk) begin
       if(rst)
 	ex_result_reg <= 16'd0;
@@ -277,35 +293,37 @@
 	ex_result_reg <= ex_result_in;
    end
 
+//m
    always_comb begin
-      if(id_ir[15:11]==5'd0 && id_ir[4:0]==5'b10011) begin
+      if( id_ir[15:11] == 5'b00000 && id_ir[4:0]== 5'b10011   )begin
 	 if(id_operand_reg2[0]==1'b0)begin
-	    ex_result_in[15:8] <= 8'b0;
-	    ex_result_in[7:0] <= d_din[15:8];
+            ex_result_in[7:0] = d_din[15:8]  ;
+	    ex_result_in[15:8] = 8'b0;
 	 end
 	 else begin
-	    ex_result_in[15:8] <= 8'b0;
-	    ex_result_in[7:0] <= d_din[7:0];
+	    ex_result_in[15:8]= 8'b0;
+	    ex_result_in[7:0]=d_din[7:0];
 	 end
       end
-      else if(id_ir[15:11]==5'd0 && id_ir[4:0]==5'b10001) begin
-	 ex_result_in <= d_din;
-	 
+      else if (id_ir[15:11]==5'd0 && id_ir[4:0]==5'b10001)begin
+	 ex_result_in = d_din;
       end
       else
-	ex_result_in <= alu_dout;
+        ex_result_in = alu_dout;
    end // always_comb
    
    
+   
 
-   //
+   //m
    always_comb begin
       if(id_ir[15] == 1'b1)
 	alu_ain = id_pc;
       else
 	alu_ain = id_operand_reg1;
    end
-
+   
+//m
    always_ff @(posedge clk) begin
       if (rst)
         ex_ir <= 16'd0;
@@ -313,19 +331,19 @@
         ex_ir <= id_ir;
    end
 
-   //(2)
+   //m
    always_comb begin
       if(id_ir[15] == 1'b1)
-	alu_op = 4'b0100;
+	alu_op <= 4'b0100;
       else
 	if (id_ir[14:11] == 4'b0000 )
-          alu_op = id_ir[3:0];
+          alu_op <= id_ir[3:0];
         else
-          alu_op = id_ir[14:11];
+          alu_op <= id_ir[14:11];
    end
    
    
-   //
+   //m
    always_comb begin
       if (id_ir[15:11] == 5'b00000)
         alu_bin = id_operand_reg2;
@@ -386,7 +404,7 @@ module alu16
 	4'b0000 : dout = ain;
 	4'b0001 : dout = bin;
 	4'b0010 : dout = ~bin;
-//	4'b0011 : dout = ain ^ bin;
+	4'b0011 : dout = ain ^ bin;
 	4'b0100 : dout = ain + bin;
 	4'b0101 : dout = ain - bin;
 	4'b0110 : dout = bin << 8;
