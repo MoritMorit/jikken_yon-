@@ -387,7 +387,7 @@ module alu16
 	4'b0000 : dout = ain;
 	4'b0001 : dout = bin;
 	4'b0010 : dout = ~bin;
-//	4'b0011 : dout = ain ^ bin;
+	4'b0011 : dout = ain ^ bin;
 	4'b0100 : dout = ain + bin;
 	4'b0101 : dout = ain - bin;
 	4'b0110 : dout = bin << 8;
