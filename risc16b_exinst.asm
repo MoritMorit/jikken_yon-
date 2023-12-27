@@ -1,3 +1,10 @@
+exAluC{
+ if(ain - bin > 0)
+  dout = 255 - ain + bin;
+ else
+  dout = 255 + ain - bin;
+}
+
 //T c000
 lui r7, #c0 
 
@@ -7,25 +14,7 @@ lui r1, #a2
 sw r0, (r1)
 
 lli r0, #71
-lui r1, #a1
-sw r0, (r1)
 
-//s b000
-lui r2, #b0
-
-lui r3, #00
-
-//r7 --> r6 copy
-mov r6, r7
-
-//s-loop
-//i-loop(y)
-lli r5, 16
-//j-loop(x)
-lli r4, 16
-
-//T(c000) --> r0
-lbu r0, (r6)
 //s(b000) --> r1
 lbu r1, (r2)
 
