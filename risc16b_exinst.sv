@@ -397,11 +397,10 @@ module alu16
 	4'b1010 : dout = ain & bin;
 	4'b1011 : dout = ain|bin;
 	4'b1100 : begin
-	   hoge = ain - bin;
-	   if(hoge < 0)
-	     dout = 255 + hoge;
+		if(ain - bin < 0)
+	     dout = 255 + ain - bin;
 	   else
-	     dout = 255 - hoge;
+	     dout = 255 - ain + bin;
 	end
 	default : dout = 16'bx;
       endcase // case (op)
